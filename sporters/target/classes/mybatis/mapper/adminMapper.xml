@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.admin.mapper.AdminMapper">
+
+<!-- user수 세기 -->
+<select id="selectAllUsersCount" resultType="int">
+	SELECT COUNT(*)
+	FROM USERS
+</select>
+
+<!-- 유저리스트 -->
+<select id="selectAllUsers" resultType="UsersDTO">
+	SELECT USER_NO, ID, NICKNAME, PW, NAME, GENDER, EMAIL, MOBILE, BIRTHYEAR, BIRTHMONTH, BIRTHDAY, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, AGREE_CODE, SNS_TYPE, JOIN_DATE, INFO_MODIFY_DATE, PW_MODIFY_DATE, SESSION_ID, SESSION_LIMIT_DATE, BANNED_STATE
+		  FROM USERS
+	ORDER BY USER_NO
+</select>
+
+<!-- 유저검색 -->
+<select id="selectAllUsersByQuery" parameterType="Map" resultType="UsersDTO">
+	SELECT USER_NO, ID, NICKNAME, PW, NAME, GENDER, EMAIL, MOBILE, BIRTHYEAR, BIRTHMONTH, BIRTHDAY, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, AGREE_CODE, SNS_TYPE, JOIN_DATE, INFO_MODIFY_DATE, PW_MODIFY_DATE, SESSION_ID, SESSION_LIMIT_DATE, BANNED_STATE
+	FROM USERS
+	WHERE ${column} LIKE '%' #{searchText} '%'
+</select>
+
+
+<select id="selectUserByNo" parameterType="int" resultType="UsersDTO">
+	SELECT USER_NO, ID, NICKNAME, PW, NAME, GENDER, EMAIL, MOBILE, BIRTHYEAR, BIRTHMONTH, BIRTHDAY, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, AGREE_CODE, SNS_TYPE, JOIN_DATE, INFO_MODIFY_DATE, PW_MODIFY_DATE, SESSION_ID, SESSION_LIMIT_DATE, BANNED_STATE
+	FROM USERS
+	WHERE USER_NO = #{userNo}
+</select>
+
+<select id="selectUserByNo2" parameterType="int" resultType="UsersDTO">
+	SELECT USER_NO, ID, NICKNAME, PW, NAME, GENDER, EMAIL, MOBILE, BIRTHYEAR, BIRTHMONTH, BIRTHDAY, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, AGREE_CODE, SNS_TYPE, JOIN_DATE, INFO_MODIFY_DATE, PW_MODIFY_DATE, SESSION_ID, SESSION_LIMIT_DATE, BANNED_STATE
+	FROM USERS
+	WHERE USER_NO = #{userNo}
+</select>
+
+<!-- USERS 테이블 컬럼삭제 -->
+<delete id="deleteUser" parameterType="Map">
+	DELETE
+	FROM USERS
+	WHERE USER_NO = #{userNo}
+</delete>
+
+<!-- 탈퇴회원테이블 컬럼 삽입 -->
+<insert id="insertRetireUser" parameterType="Map">
+	INSERT INTO RETIRE_USERS
+			(RETIRE_USER_NO, RETIRE_USER_ID, RETIRE_JOIN_DATE, RETIRE_DATE)
+		VALUES
+			(#{retireUserNo}, #{retireUserId}, #{retireJoinDate}, NOW())
+</insert>
+
+
+
+	
+</mapper>

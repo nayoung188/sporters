@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.userSupport.mapper.QnaReplyMapper">
+
+
+	<select id="selectReplyList" parameterType="Map" resultType="QnaReplyDTO">
+		SELECT QNA_REPLY_NO, QNA_NO, QNA_REPLY_CONTENT, QNA_REPLY_CREATE_DATE, STATE, DEPTH, GROUP_NO
+		  FROM QNA_REPLY
+		 WHERE QNA_NO = #{qnaNo}
+	</select>
+	
+	<insert id="insertReply" parameterType="qnaDTO">
+		INSERT INTO QNA_REPLY
+			(QNA_NO, QNA_REPLY_CONTENT, QNA_REPLY_CREATE_DATE, STATE, DEPTH, GROUP_NO)
+		VALUES
+			(#{qnaNo}, #{qnaReplyContent}, NOW(), 1, 0, 0)
+	</insert>
+	
+	<update id="updateGroupNo" parameterType="QnaReplyDTO">
+		UPDATE QNA_REPLY
+		  SET GROUP_NO = #{qnaReplyNo}
+		WHERE QNA_REPLY_NO = #{qnaReplyNo}
+	</update>
+	
+	<update id="deleteReply" parameterType="int">
+		UPDATE QNA_REPLY
+		   SET STATE = -1
+		 WHERE QNA_REPLY_NO = #{qnaReplyNo}
+	</update>
+	
+</mapper>

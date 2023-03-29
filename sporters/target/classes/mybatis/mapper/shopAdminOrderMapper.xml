@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.shopAdmin.mapper.ShopAdminOrderMapper">
+
+	<!-- 주문 + 유저 resultMap -->
+	<resultMap type="OrderDTO" id="OrderMap">
+		<id property="orderNo" column="ORDER_NO" />
+		<result property="userNo" column="USER_NO"/>
+		<result property="cartNo" column="CART_NO"/>
+		<result property="payment" column="PAYMENT"/>
+		<result property="name" column="NAME"/>
+		<result property="mobile" column="MOBILE"/>
+		<result property="stock" column="STOCK"/>
+		<result property="postcode" column="POSTCODE"/>
+		<result property="roadAddress" column="ROAD_ADDRESS"/>
+		<result property="jibunAddress" column="JIBUN_ADDRESS"/>
+		<result property="detailAddress" column="DETAIL_ADDRESS"/>
+		<result property="orderDate" column="ORDER_DATE"/>
+		<result property="orderState" column="ORDER_STATE"/>
+		<result property="cartBundle" column="CART_BUNDLE"/>
+		<association property="users" javaType="UsersDTO">
+			<id property="userNo" column="USER_NO"/>
+			<result property="id" column="ID"/>
+			<result property="name" column="NAME"/>
+			<result property="gender" column="GENDER"/>
+			<result property="email" column="EMAIL"/>
+			<result property="mobile" column="MOBILE"/>
+			<result property="postcode" column="POSTCODE"/>
+			<result property="roadAddress" column="ROAD_ADDRESS"/>
+			<result property="jibunAddress" column="JIBUN_ADDRESS"/>
+			<result property="detailAddress" column="DETAIL_ADDRESS"/>
+		</association>
+	</resultMap>
+	
+		<resultMap type="cartDTO" id="CartMap">
+			<id property="cartNo" column="CART_NO" />
+			<result property="userNo" column="USER_NO"/>
+			<result property="prodNo" column="PROD_NO"/>
+			<result property="prodCnt" column="PROD_CNT"/>
+			<association property="product" javaType="ProductDTO">
+				<id property="prodNo" column="PROD_NO" />
+				<result property="prodName" column="PROD_NAME"/>
+				<result property="price" column="PRICE"/>
+				<result property="stock" column="STOCK"/>
+			</association>
+			<association property="users" javaType="UsersDTO">
+				<id property="userNo" column="USER_NO"/>
+				<result property="id" column="ID"/>
+				<result property="name" column="NAME"/>
+				<result property="gender" column="GENDER"/>
+				<result property="email" column="EMAIL"/>
+				<result property="mobile" column="MOBILE"/>
+				<result property="postcode" column="POSTCODE"/>
+				<result property="roadAddress" column="ROAD_ADDRESS"/>
+				<result property="jibunAddress" column="JIBUN_ADDRESS"/>
+				<result property="detailAddress" column="DETAIL_ADDRESS"/>
+			</association>
+			<association property="order" javaType="OrderDTO">
+				<id property="orderNo" column="ORDER_NO"/>
+			</association>
+		</resultMap>
+	
+	
+	<!-- 주문목록 -->
+	<select id="selectOrderList" resultMap="OrderMap" parameterType="map">
+		SELECT O.ORDER_NO, O.CART_BUNDLE, U.NAME, O.NAME, O.MOBILE, O.ORDER_DATE, O.ORDER_STATE, O.PRICE_ALL
+		  FROM ORDERS O LEFT OUTER JOIN USERS U
+		    ON O.USER_NO = U.USER_NO
+		 ORDER BY O.ORDER_NO
+		 LIMIT #{begin}, #{recordPerPage}
+	</select>
+	
+	<!-- 주문개수 -->
+	<select id="selectOrderCnt" resultType="int">
+		SELECT COUNT(ORDER_NO)
+		  FROM ORDERS
+	</select>
+	
+	<!-- 주문상세보기 -->
+	<select id="selectOrderDetailByUserNo" parameterType="map" resultMap="OrderMap">
+		SELECT O.ORDER_NO, U.USER_NO, O.CART_NO, O.USER_NO, O.NAME, U.NAME, O.MOBILE, O.PRICE_ALL, O.CART_BUNDLE, O.ORDER_STATE, O.POSTCODE, O.ROAD_ADDRESS, O.JIBUN_ADDRESS, O.DETAIL_ADDRESS, O.ORDER_DATE
+		  FROM ORDERS O INNER JOIN USERS U
+		    ON O.USER_NO = U.USER_NO
+		 WHERE O.ORDER_NO = #{orderNo}
+	</select>
+	
+	<!-- 상품 상세보기 -->
+	<select id="selectOrderProdDetailByUserNo" parameterType="map" resultMap="CartMap">
+		SELECT C.CART_NO, C.USER_NO, C.PROD_NO, C.PROD_CNT, P.PROD_NAME, P.PRICE, P.DISCOUNT
+		  FROM CART C INNER JOIN PRODUCT P
+		    ON C.PROD_NO = P.PROD_NO INNER JOIN ORDERS O
+		    ON C.CART_NO = O.CART_NO
+		 WHERE O.ORDER_NO = #{orderNo}
+	</select>
+	
+	<!-- 주문상태 업데이트 -->
+	<update id="updateOrderState" parameterType="map">
+		UPDATE ORDERS
+		   SET ORDER_STATE = #{orderState}
+		 WHERE ORDER_NO = #{orderNo}
+	</update>
+	
+	<!-- 주문개수(그래프용) -->
+	<select id="selectOrderCountByDay" resultType="map">
+		SELECT ORDER_DATE, SUM(PRICE_ALL)
+		  FROM ORDERS
+		 WHERE ORDER_DATE BETWEEN DATE_ADD(NOW(), INTERVAL - 1 MONTH) AND NOW()
+		 GROUP BY ORDER_DATE
+	</select>
+	
+	
+	<!-- 상품 검색 개수 -->
+	<select id="selectSearchCount" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM ORDERS
+		<where>
+		    <if test="column=='PROD_NO'">
+		    	${column} = #{query}
+		    </if>
+		    <if test="column=='PROD_NAME' || column=='PROD_CONTENT' || column=='ORIGIN'">
+		    	${column} LIKE CONCAT('%', #{query}, '%')
+		    </if>
+		</where>
+	</select>
+	
+	<!-- 상품 검색 -->
+	<select id="selectSearchOrderList" parameterType="Map" resultMap="OrderMap">
+	SELECT O.ORDER_NO, U.NAME, O.NAME, O.MOBILE, O.ORDER_DATE, O.ORDER_STATE, O.PRICE_ALL
+	  FROM USERS U INNER JOIN (SELECT ORDER_NO, USER_NO, NAME, MOBILE, ORDER_DATE, ORDER_STATE, PRICE_ALL
+	                             FROM ORDERS
+                                <where>
+				                  	<if test="column=='ORDER_NO'">
+				                   		${column} = #{query}
+				                    </if>
+				                    <if test="column=='USER_NO' || column=='NAME' || column=='ORDER_STATE'">
+				                    	${column} LIKE CONCAT('%', #{query}, '%')
+				                    </if>
+				                </where>) O
+       ON O.USER_NO = U.USER_NO
+	</select>
+
+</mapper>

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.board.mapper.SpoReviewMapper">
+	<resultMap type="SpoReviewDTO" id="SpoReviewMap">
+		<id property="spoReviewNo"  column="SPO_REVIEW_NO" />
+		<result property="title"  column="TITLE" />
+		<result property="content"  column="CONTENT" />
+		<result property="createDate"  column="CREATE_DATE" />
+		<result property="hit"  column="HIT" />
+		<result property="userNo"  column="USER_NO" />
+		<result property="state"  column="STATE" />				
+		<result property="localBoardNo"  column="LOCAL_BOARD_NO" />
+		<result property="localNo"  column="LOCAL_NO" />
+		<result property="ip"  column="IP" />
+		<result property="modifyDate"  column="MODIFY_DATE" />	
+		<result property="joinStart"  column="JOIN_START" />	
+		<result property="joinEnd"  column="JOIN_END" />	
+		
+		
+		<association property="Localss"  javaType="LocalDTO" >
+			<result property="localBoardNo"  column="LOCAL_BOARD_NO" />
+			<result property="title"  column="TITLE" />
+			<result property="content"  column="CONTENT" />
+			<result property="createDate"  column="CREATE_DATE" />
+			<result property="hit"  column="HIT" />
+			<result property="userNo"  column="USER_NO" />
+			<result property="state"  column="STATE" />		
+			<result property="maxUser"  column="MAX_USER" />
+			<result property="localNo"  column="LOCAL_NO" />
+			<result property="ip"  column="IP" />
+			<result property="modifyDate"  column="MODIFY_DATE" />	
+			<result property="joinStart"  column="JOIN_START" />	
+			<result property="joinEnd"  column="JOIN_END" />	
+		</association>
+		
+		
+	
+		<association property="users"  javaType="UsersDTO" >
+			<id  property="userNo"  column="USER_NO"  />
+			<result property="id"  column="ID" />	
+			<result property="nickname"  column="NICKNAME" />	
+			<result property="name"  column="NAME" />
+			<result property="joinDate"  column="JOINDATE" />
+			<result property="gender"  column="GENDER" />		
+		</association>		
+		
+		
+		<association property="SpoImageess" javaType="SpoImageDTO">
+			<id property="imageNo" column="SPO_IMAGE_NO"/>
+			<result property="spoReviewNo" column="SPO_REVIEW_NO"/>
+			<result property="filesystem" column="FILESYSTEM"/>		
+		</association>
+		
+		
+		
+		
+		
+	</resultMap>
+	
+	
+	
+	
+	<resultMap type="LocalDTO" id="LocalDtoMap">
+		<id property="localBoardNo"  column="LOCAL_BOARD_NO" />
+		<result property="title"  column="TITLE" />
+		<result property="content"  column="CONTENT" />
+		<result property="createDate"  column="CREATE_DATE" />
+		<result property="hit"  column="HIT" />
+		<result property="userNo"  column="USER_NO" />
+		<result property="state"  column="STATE" />		
+		<result property="maxUser"  column="MAX_USER" />
+		<result property="localNo"  column="LOCAL_NO" />
+		<result property="ip"  column="IP" />
+		<result property="modifyDate"  column="MODIFY_DATE" />	
+		<result property="joinStart"  column="JOIN_START" />	
+		<result property="joinEnd"  column="JOIN_END" />	
+	
+		<association property="users"  javaType="UsersDTO" >
+			<id  property="userNo"  column="USER_NO"  />
+			<result property="id"  column="ID" />	
+			<result property="nickname"  column="NICKNAME" />	
+			<result property="name"  column="NAME" />
+			<result property="joinDate"  column="JOINDATE" />
+			<result property="gender"  column="GENDER" />		
+		</association>		
+		
+		
+		<association property="localImagess" javaType="LocalImageDTO">
+			<id property="imageNo" column="LOCAL_IMAGE_NO"/>
+			<result property="localBoardNo" column="LOCAL_BOARD_NO"/>
+			<result property="filesystem" column="FILESYSTEM"/>		
+		</association>
+		
+	</resultMap>
+	
+	
+	
+	
+	
+	
+
+	<select id="selectSpoReviewListCnt" resultType="int">
+		SELECT COUNT(*)
+		FROM SPO_REVIEW
+	</select>
+
+	<!-- 게시판목록 -->
+ 	<!--  
+	<select id="selectSpoReviewList" parameterType="Map" resultMap="SpoReviewMap">
+		SELECT A.SPO_REVIEW_NO, A.TITLE, A.CONTENT, A.CREATE_DATE,  A.HIT,A.USER_NO, A.STATE,A.LOCAL_BOARD_NO, A.LOCAL_NO, A.IP, A.MODIFY_DATE, A.JOIN_START, A.JOIN_END,A.ID, A.NICKNAME, A.GENDER, A.SPO_IMAGE_NO, A.FILESYSTEM
+		  FROM (SELECT F.SPO_REVIEW_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE, L.LOCAL_BOARD_NO, L.LOCAL_NO, F.IP, F.MODIFY_DATE, F.JOIN_START, F.JOIN_END,U.ID, U.NICKNAME, U.GENDER, TN.SPO_IMAGE_NO, TN.FILESYSTEM            
+		  		  FROM SPO_REVIEW F INNER JOIN USERS U		  		  
+                  ON F.USER_NO = U.USER_NO LEFT OUTER JOIN SPO_IMAGE TN     	
+		  		  ON F.SPO_REVIEW_NO = TN.SPO_REVIEW_NO
+		  		  FROM SPO_REVIEW F INNER JOIN LOCALS L
+		  		  ON F.SPO_REVIEW_NO = L.LOCAL_BOARD_NO ) A
+		  		  WHERE A.FILESYSTEM IS NOT NULL
+				ORDER BY SPO_REVIEW_NO DESC
+	
+		 LIMIT #{begin}, #{recordPerPage}		 	 
+	</select>
+	-->
+	
+	
+	<select id="selectSpoReviewList" parameterType="Map" resultMap="SpoReviewMap">
+		SELECT  	   A.SPO_REVIEW_NO, A.TITLE, A.CONTENT, A.CREATE_DATE,  A.HIT, A.USER_NO, A.STATE,A.LOCAL_BOARD_NO, A.LOCAL_NO, A.IP, A.MODIFY_DATE,A.NICKNAME, A.GENDER
+		  FROM (SELECT F.SPO_REVIEW_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, U.USER_NO, F.STATE,L.LOCAL_BOARD_NO, L.LOCAL_NO, F.IP, F.MODIFY_DATE,U.NICKNAME, U.GENDER
+		  		  FROM SPO_REVIEW F INNER JOIN USERS U
+		  		   ON F.USER_NO = U.USER_NO LEFT OUTER JOIN LOCALS L    
+		     	    ON F.LOCAL_BOARD_NO = L.LOCAL_BOARD_NO) A
+		  LIMIT #{begin}, #{recordPerPage}	
+	</select>
+	
+
+	
+	<!-- 메인 섬네일 갯수제한을 위한 쿼리 -->
+	<!-- 미친 ㅋㅋㅋㅋ where로 파일 없을때는 게시글 안불러오게 구현성공함 ㄹㅇㅋㅋㅋㅋㅋ 신주노 드디어 빛을 보다 -주노창세기 2장 5절  -->
+	<select id="selectindexThumbNail" parameterType="Map" resultMap="SpoReviewMap">
+		SELECT A.SPO_REVIEW_NO, A.TITLE, A.CONTENT, A.CREATE_DATE,  A.HIT,A.USER_NO, A.STATE,A.LOCAL_BOARD_NO, A.LOCAL_NO, A.IP, A.MODIFY_DATE, A.JOIN_START, A.JOIN_END,A.ID, A.NICKNAME, A.GENDER, A.SPO_IMAGE_NO, A.FILESYSTEM
+		  FROM (SELECT F.SPO_REVIEW_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE, A.LOCAL_BOARD_NO, F.LOCAL_NO, F.IP, F.MODIFY_DATE, F.JOIN_START, F.JOIN_END,U.ID, U.NICKNAME, U.GENDER, TN.SPO_IMAGE_NO, TN.FILESYSTEM            
+		  		  FROM SPO_REVIEW F INNER JOIN USERS U
+                  ON F.USER_NO = U.USER_NO LEFT OUTER JOIN SPO_IMAGE TN
+		  		  ON F.SPO_REVIEW_NO = TN.SPO_REVIEW_NO) A
+		  		  WHERE A.FILESYSTEM IS NOT NULL
+				ORDER BY SPO_REVIEW_NO DESC
+                LIMIT 0, 3 
+	</select>
+	
+	
+	
+	<!-- 게시판 삽입(첨부파일 추가) -->
+	<insert id="insertSpoReview" parameterType="SpoReviewDTO"  useGeneratedKeys="true" keyProperty="spoReviewNo">
+		INSERT INTO SPO_REVIEW
+			(   TITLE, CONTENT, CREATE_DATE, HIT, USER_NO, STATE, IP, MODIFY_DATE )
+		VALUES
+			(#{title}, #{content}, NOW(),    0, #{userNo}, 0, #{ip}, NOW()  )
+	</insert>
+	
+	
+	<!-- 이미지 삽입 -->
+	<insert id="insertSummernoteImage" parameterType="SpoImageDTO">
+		INSERT INTO SPO_IMAGE
+			(SPO_REVIEW_NO, FILESYSTEM)
+		VALUES
+			(#{spoReviewNo}, #{filesystem})						
+	</insert>
+
+
+
+	<!-- 상세보기 -->
+	<!-- 
+	<select id="selectFreeByNo" parameterType="int" resultType="FreeDTO">
+	  SELECT FREE_NO, TITLE, CONTENT, CREATE_DATE, HIT, USER_NO, STATE,IP,MODIFY_DATE
+	  FROM FREE
+	  WHERE FREE_NO = #{freeNo}
+	</select>
+	 -->
+	  <select id="selectLocalByNo" parameterType="int" resultMap="LocalDtoMap">
+	 SELECT  F.LOCAL_BOARD_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE,F.MAX_USER, F.IP, F.MODIFY_DATE,F.JOIN_START, F.JOIN_END,  U.ID, U.NICKNAME, U.GENDER
+	  		  FROM LOCALS F INNER JOIN USERS U
+	     	    ON F.USER_NO = U.USER_NO
+	 WHERE F.LOCAL_BOARD_NO = #{localBoardNo}
+	</select>
+	 
+	 
+	 
+	 
+	 <select id="selectSpoReviewByNo" parameterType="int" resultMap="SpoReviewMap">
+	 SELECT  F.SPO_REVIEW_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE,  F.LOCAL_BOARD_NO,  F.IP, F.MODIFY_DATE, U.ID, U.NICKNAME, U.GENDER
+	  		  FROM SPO_REVIEW F INNER JOIN USERS U
+	     	    ON F.USER_NO = U.USER_NO
+	 WHERE F.SPO_REVIEW_NO = #{spoReviewNo}
+	</select>
+	
+	
+	<!-- 상세보기(조회수) -->	
+	<update id="updateHit" parameterType="int">
+		UPDATE LOCALS
+		   SET HIT = HIT + 1
+		 WHERE LOCAL_BOARD_NO = #{localBoardNo}
+	</update>
+	<update id="latterupdateHit" parameterType="int">
+		UPDATE SPO_REVIEW
+		   SET HIT = HIT + 1
+		 WHERE SPO_REVIEW_NO = #{spoReviewNo}
+	</update>
+	
+	<select id="selectSummernoteImageListInGallery" parameterType="int" resultType="LocalImageDTO">
+		SELECT LOCAL_IMAGE_NO, FILESYSTEM
+		  FROM LOCALS_IMAGE
+		 WHERE LOCAL_IMAGE_NO = #{imageNo}
+	</select>
+	
+
+
+	<select id="selectlatterSummernoteImageListInGallery" parameterType="int" resultType="SpoImageDTO">
+		SELECT SPO_IMAGE_NO, FILESYSTEM
+		  FROM SPO_IMAGE
+		 WHERE SPO_IMAGE_NO = #{imageNo}
+	</select>
+	
+	
+
+	<!-- 수정 -->
+	<update id="updateLocal" parameterType="LocalDTO">
+		UPDATE LOCALS
+		   SET TITLE = #{title}, CONTENT = #{content}, MODIFY_DATE = NOW()
+		 WHERE LOCAL_BOARD_NO = #{localBoardNo}
+	</update>
+	
+	<update id="updateSpoReview" parameterType="SpoReviewDTO">
+		UPDATE SPO_REVIEW
+		   SET TITLE = #{title}, CONTENT = #{content}, MODIFY_DATE = NOW()
+		 WHERE SPO_REVIEW_NO = #{spoReviewNo}
+	</update>
+	
+	
+	<!-- 삭제 -->
+	<delete id="deleteSpoReviewGallery" parameterType="int">
+		DELETE
+		  FROM SPO_REVIEW
+		 WHERE SPO_REVIEW_NO = #{spoReviewNo}
+	</delete>
+	
+	<select id="spoReviewCount" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		  FROM LOCALS
+		 WHERE USER_NO = #{userNo}
+	</select>
+	
+</mapper>

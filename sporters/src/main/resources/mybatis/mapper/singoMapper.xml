@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.admin.mapper.SingoMapper">
+
+<resultMap type="SingoDTO" id="SingoMap">
+<id property="singoNo" column="SINGO_NO"/>
+<result property="singoCategory" column="SINGO_CATEGORY"/>
+<result property="singoTitle" column="SINGO_TITLE"/>
+<result property="singoUserReason" column="SINGO_USER_REASON"/>
+<result property="singoLink" column="SINGO_LINK"/>
+<result property="singoCreateDate" column="SINGO_CREATE_DATE"/>
+<result property="singoRemoveDate" column="SINGO_REMOVE_DATE"/>
+<result property="singoReason" column="SINGO_REASON"/>
+<result property="userId" column="USER_ID"/>
+<result property="freeNo" column="FREE_NO"/>
+	<association property="users"  javaType="UsersDTO" >
+	<id  property="userNo"  column="USER_NO"  />
+	<result property="id"  column="ID" />	
+	<result property="nickname"  column="NICKNAME" />	
+	<result property="name"  column="NAME" />
+	<result property="joinDate"  column="JOIN_DATE" />
+	<result property="gender"  column="GENDER" />
+	</association>
+	<association property="free" javaType="FreeDTO">
+		<id property="freeNo"  column="FREE_NO" />
+		<result property="title"  column="TITLE" />
+		<result property="content"  column="CONTENT" />
+		<result property="createDate"  column="CREATE_DATE" />
+		<result property="hit"  column="HIT" />
+		<result property="userNo"  column="USER_NO" />
+		<result property="state"  column="STATE" />
+		<result property="ip"  column="IP" />
+	</association>
+</resultMap>
+
+<select id="selectSingoCount" resultType="int">
+	SELECT COUNT(*)
+		  FROM SINGO	
+</select>
+
+<select id="selectSingoList" parameterType="Map" resultMap="SingoMap">
+	SELECT A.SINGO_NO, A.SINGO_CATEGORY, A.SINGO_LINK, A.SINGO_USER_REASON, A.SINGO_CREATE_DATE, A.SINGO_REMOVE_DATE, A.SINGO_REASON, A.FREE_NO, A.USER_NO, A.JOIN_DATE, A.GENDER, A.SINGO_TITLE, A.CONTENT, A.CREATE_DATE, A.IP
+	FROM (SELECT S.SINGO_NO, S.SINGO_CATEGORY, S.SINGO_LINK, S.SINGO_USER_REASON, S.SINGO_CREATE_DATE, S.SINGO_REMOVE_DATE, S.SINGO_REASON, F.FREE_NO, U.USER_NO, U.JOIN_DATE, U.GENDER, S.SINGO_TITLE, F.CONTENT, F.CREATE_DATE, F.IP
+	FROM SINGO S LEFT JOIN FREE F
+	ON S.FREE_NO = F.FREE_NO LEFT JOIN USERS U
+	ON F.USER_NO = U.USER_NO) A
+	ORDER BY SINGO_NO DESC
+</select>
+
+<!-- 게시판 삽입(첨부파일 추가) -->
+	<insert id="insertSingo" parameterType="SingoDTO"  useGeneratedKeys="true" keyProperty="singoNo">
+		INSERT INTO SINGO
+			(SINGO_CATEGORY, SINGO_TITLE, SINGO_LINK, SINGO_USER_REASON, SINGO_CREATE_DATE, SINGO_REMOVE_DATE, SINGO_REASON, USER_NO, FREE_NO)
+		VALUES
+			(#{singoCategory}, #{singoTitle}, #{singoLink}, #{singoUserReason}, NOW(), NULL, #{singoReason}, #{userNo}, #{freeNo})
+	</insert>
+	
+	<!-- 관리자 신고글업데이트 -->
+	<update id="adminUpdateSingo" parameterType="SingoDTO">
+		UPDATE SINGO
+		SET SINGO_REMOVE_DATE = NOW(), SINGO_REASON = #{singoReason}
+		WHERE SINGO_NO = #{singoNo}
+	</update>
+
+<!-- 신고 카테고리 목록 -->
+	<select id="selectSingoCategoryList" resultType="SingoCategoryDTO">
+		SELECT SINGO_CATEGORY_NO, SINGO_CATEGORY_NAME
+		  FROM SINGO_CATEGORY
+	</select>
+
+<!-- 신고 카테고리 개수 -->
+	<select id="selectSingoCategoryCnt" resultType="int">
+		SELECT COUNT(*)
+		  FROM SINGO_CATEGORY
+	</select>
+	
+	<!-- 신고 카테고리 추가 -->
+	<insert id="insertSingoCategory" parameterType="SingoCategoryDTO">
+		INSERT INTO SINGO_CATEGORY (SINGO_CATEGORY_NAME)
+		VALUES (#{singoCategoryName})
+	</insert>
+	
+	<delete id="deleteSingoCategory" parameterType="int">
+		DELETE
+		  FROM SINGO_CATEGORY
+		 WHERE SINGO_CATEGORY_NO = #{singoCategoryNo}
+	</delete>
+	
+</mapper>

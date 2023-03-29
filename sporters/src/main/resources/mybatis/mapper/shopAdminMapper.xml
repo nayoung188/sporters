@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.shopAdmin.mapper.ShopAdminMapper">
+
+	<!-- 카테고리 + 상품 resultMap -->
+	<resultMap type="ProductDTO" id="ProductMap">
+		<id property="prodNo" column="PROD_NO" />
+		<result property="prodCategoryNo" column="PROD_CATEGORY_NO"/>
+		<result property="prodName" column="PROD_NAME"/>
+		<result property="price" column="PRICE"/>
+		<result property="discount" column="DISCOUNT"/>
+		<result property="prodContent" column="PROD_CONTENT"/>
+		<result property="origin" column="ORIGIN"/>
+		<result property="stock" column="STOCK"/>
+		<result property="prodCreateDate" column="PROD_CREATE_DATE"/>
+		<association property="prodCategory" javaType="ProdCategoryDTO">
+			<id property="prodCategoryNo" column="PROD_CATEGORY_NO"/>
+			<result property="prodCategoryName" column="PROD_CATEGORY_NAME"/>
+		</association>
+		<association property="prodThumbnail" javaType="ProdThumbnailDTO">
+			<id property="tnNo" column="TN_NO"/>
+			<result property="prodNo" column="PROD_NO"/>
+			<result property="tnPath" column="TN_PATH"/>
+			<result property="tnOrigin" column="TN_ORIGIN"/>
+			<result property="tnFilesystem" column="TN_FILESYSTEM"/>
+			<result property="isThumbnail" column="IS_THUMBNAIL"/>
+		</association>
+	</resultMap>
+	
+	<!-- 상품 전체 개수 -->
+	<select id="selectProdListCount" resultType="int">
+		SELECT COUNT(PROD_NO)
+		  FROM PRODUCT
+	</select>
+
+	<!-- 상품목록보기 -->
+	<select id="selectProdListAllByPage" resultMap="ProductMap" parameterType="Map">
+		SELECT P.PROD_NO, P.PROD_NAME, P.PRICE, P.DISCOUNT, P.PROD_CONTENT, P.ORIGIN, P.STOCK, P.PROD_CREATE_DATE, C.PROD_CATEGORY_NAME, TN.IS_THUMBNAIL
+		  FROM PROD_CATEGORY C INNER JOIN PRODUCT P
+		    ON P.PROD_CATEGORY_NO = C.PROD_CATEGORY_NO LEFT OUTER JOIN PROD_THUMBNAIL TN
+		    ON P.PROD_NO = TN.PROD_NO
+		 ORDER BY PROD_NO DESC
+		 LIMIT #{begin}, #{recordPerPage}
+	</select>
+	
+	<!-- 상품 상세보기 (상세보기 정보용)-->
+	<select id="selectProdByNo" parameterType="int" resultMap="ProductMap">
+		SELECT P.PROD_NO, P.PROD_NAME, P.PRICE, P.DISCOUNT, P.PROD_CONTENT, P.ORIGIN, P.STOCK, P.PROD_CATEGORY_NO, C.PROD_CATEGORY_NAME, P.PROD_CREATE_DATE d
+		  FROM PRODUCT P INNER JOIN PROD_CATEGORY C
+		    ON C.PROD_CATEGORY_NO = P.PROD_CATEGORY_NO
+		 WHERE P.PROD_NO = #{prodNo}
+	</select>
+	
+	<!-- 상품 상세보기 (썸네일 List) -->
+	<select id="selectProdThumbnailListByNo" parameterType="int" resultType="ProdThumbnailDTO">
+		SELECT TN_NO, PROD_NO, TN_PATH, TN_ORIGIN, TN_FILESYSTEM, IS_THUMBNAIL
+		  FROM PROD_THUMBNAIL
+		 WHERE PROD_NO = #{prodNo}
+	</select>
+	
+	<select id="selectProdImageList" parameterType="int" resultType="ProdImageDTO">
+		SELECT PROD_NO, FILESYSTEM
+		  FROM PROD_DETAIL_IMAGE
+	</select>
+	
+	<!-- 상세보기(상품 상세이미지) -->
+	<select id="selectProdImageListByNo" parameterType="int" resultType="ProdImageDTO">
+		SELECT PROD_NO, FILESYSTEM
+		  FROM PROD_DETAIL_IMAGE
+		 WHERE PROD_NO = #{prodNo}
+	</select>
+	
+	<delete id="deleteProdImage" parameterType="String">
+		DELETE
+		  FROM PROD_DETAIL_IMAGE
+		 WHERE FILESYSTEM = #{filesystem}
+	</delete>
+	
+	<!-- 상품이미지 등록하기 -->
+	<insert id="insertProdImage" parameterType="ProdImageDTO">
+		INSERT INTO PROD_DETAIL_IMAGE
+			(PROD_NO, FILESYSTEM)
+		VALUES
+			(#{prodNo}, #{filesystem})
+	</insert>
+	
+	<!-- 상품등록하기 -->
+	<insert id="insertProd" parameterType="ProductDTO" useGeneratedKeys="true" keyProperty="prodNo">
+		INSERT INTO PRODUCT
+			(PROD_CATEGORY_NO, PROD_NAME, PRICE, DISCOUNT, PROD_CONTENT, ORIGIN, STOCK, PROD_CREATE_DATE)
+		VALUES
+			(#{prodCategoryNo}, #{prodName}, #{price}, #{discount}, #{prodContent}, #{origin}, #{stock}, NOW())
+	</insert>
+	<!-- Thumbnail 등록하기 -->
+	<insert id="insertThumbnail" parameterType="ProdThumbnailDTO">
+		INSERT INTO PROD_THUMBNAIL
+			(PROD_NO, TN_PATH, TN_ORIGIN, TN_FILESYSTEM, IS_THUMBNAIL)
+		VALUES
+			(#{prodNo}, #{tnPath}, #{tnOrigin}, #{tnFilesystem}, #{isThumbnail})
+	</insert>
+	
+	<!-- Thumbnail 삭제하기 -->
+	<delete id="updateThumbnail" parameterType="ProdThumbnailDTO">
+		UPDATE PROD_THUMBNAIL
+		   SET TN_PATH = #{tnPath}
+		     , TN_ORIGIN = #{tnOrigin}
+		     , TN_FILESYSTEM = #{tnFilesystem}
+		     , IS_THUMBNAIL = #{isThumbnail}
+		 WHERE TN_NO = #{tnNo}
+	</delete>
+	
+	<!-- 상품수정 -->
+	<update id="updateProd" parameterType="ProductDTO">
+		UPDATE PRODUCT
+		   SET PROD_NAME = #{prodName}
+		     , PROD_CATEGORY_NO = #{prodCategoryNo}
+		     , PRICE = #{price}
+		     , DISCOUNT = #{discount}
+		     , ORIGIN = #{origin}
+		     , STOCK = #{stock}
+		     , PROD_CONTENT = #{prodContent}
+		 WHERE PROD_NO = #{prodNo}
+	</update>
+	
+	<!-- 상품삭제 -->
+	<delete id="deleteProd" parameterType="int">
+		DELETE
+		  FROM PRODUCT
+		 WHERE PROD_NO = #{prodNo}
+	</delete>
+	
+	<!-- 상품검색 자동완성 -->
+	<select id="selectAutoCompleteList" parameterType="Map" resultType="ProductDTO">
+		SELECT ${column}
+		  FROM PRODUCT
+		<if test="'column=='PROD_NAME' || column=='PROD_CONTENT' || column=='ORIGIN'">
+			 WHERE ${column} LIKE CONCAT('%', #{query}, '%')
+		</if>
+	</select>
+	
+	<!-- 상품 검색 개수 -->
+	<select id="selectSearchCount" parameterType="Map" resultType="int">
+		SELECT COUNT(*)
+		  FROM PRODUCT
+		<where>
+		    <if test="column=='PROD_NO'">
+		    	${column} = #{query}
+		    </if>
+		    <if test="column=='PROD_NAME' || column=='PROD_CONTENT' || column=='ORIGIN'">
+		    	${column} LIKE CONCAT('%', #{query}, '%')
+		    </if>
+		</where>
+	</select>
+	
+	<!-- 상품 검색 -->
+		<select id="selectSearchProductList" parameterType="Map" resultMap="ProductMap">
+		SELECT P.PROD_NO, P.PROD_NAME, P.PRICE, P.DISCOUNT, P.PROD_CONTENT, P.ORIGIN, P.STOCK, P.PROD_CREATE_DATE, C.PROD_CATEGORY_NAME, TN.IS_THUMBNAIL
+		  FROM PROD_CATEGORY C INNER JOIN (SELECT PROD_NO, PROD_CATEGORY_NO, PROD_NAME, PRICE, DISCOUNT, PROD_CONTENT, ORIGIN, STOCK, PROD_CREATE_DATE
+		                                     FROM PRODUCT
+                                       <where>
+						                    <if test="column=='PROD_NO'">
+						                    	${column} = #{query}
+						                    </if>
+						                    <if test="column=='PROD_NAME' || column=='PROD_CONTENT' || column=='ORIGIN'">
+						                    	${column} LIKE CONCAT('%', #{query}, '%')
+						                    </if>
+						                </where>) P
+            ON C.PROD_CATEGORY_NO = P.PROD_CATEGORY_NO LEFT OUTER JOIN PROD_THUMBNAIL TN
+    		ON P.PROD_NO = TN.PROD_NO
+	</select>
+	
+</mapper>

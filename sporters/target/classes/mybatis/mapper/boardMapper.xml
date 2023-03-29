@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.board.mapper.BoardMapper">
+	<resultMap type="FreeDTO" id="FreeDtoMap">
+		<id property="freeNo"  column="FREE_NO" />
+		<result property="title"  column="TITLE" />
+		<result property="content"  column="CONTENT" />
+		<result property="createDate"  column="CREATE_DATE" />
+		<result property="hit"  column="HIT" />
+		<result property="userNo"  column="USER_NO" />
+		<result property="state"  column="STATE" />
+		<result property="ip"  column="IP" />
+		<result property="modifyDate"  column="MODIFY_DATE" />	
+		<association property="users"  javaType="UsersDTO" >
+			<id  property="userNo"  column="USER_NO"  />
+			<result property="id"  column="ID" />	
+			<result property="nickname"  column="NICKNAME" />	
+			<result property="name"  column="NAME" />
+			<result property="joinDate"  column="JOINDATE" />
+			<result property="gender"  column="GENDER" />
+		</association>
+	</resultMap>
+	
+
+	<select id="selectFreeListCnt" resultType="int">
+		SELECT COUNT(*)
+		FROM FREE
+	</select>
+
+	<!-- 게시판목록 -->
+	<select id="selectFreeList" parameterType="Map" resultMap="FreeDtoMap">
+		SELECT A.FREE_NO, A.TITLE, A.CONTENT, A.CREATE_DATE,  A.HIT,A.USER_NO, A.STATE,  A.IP, A.MODIFY_DATE, A.ID, A.NICKNAME, A.GENDER
+		  FROM (SELECT F.FREE_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE, F.IP, F.MODIFY_DATE, U.ID, U.NICKNAME, U.GENDER
+		  		  FROM FREE F INNER JOIN USERS U
+		     	    ON F.USER_NO = U.USER_NO) A
+		 ORDER BY A.FREE_NO DESC
+		 LIMIT #{begin}, #{recordPerPage}	
+	</select>
+	
+<!-- 게시판 삽입(첨부파일 추가) -->
+	<insert id="insertFree" parameterType="FreeDTO"  useGeneratedKeys="true" keyProperty="freeNo">
+		INSERT INTO FREE
+			(TITLE, CONTENT,CREATE_DATE, HIT,USER_NO,STATE,IP,MODIFY_DATE)
+		VALUES
+			(#{title}, #{content}, NOW(), 0,#{userNo}, 0, #{ip}, NOW())
+	</insert>
+	
+	
+	<!-- 이미지 삽입 -->
+	<insert id="insertSummernoteImage" parameterType="FreeImageDTO">
+		INSERT INTO FREE_IMAGE
+			(FREE_NO, FILESYSTEM)
+		VALUES
+			(#{freeNo}, #{filesystem})						
+	</insert>
+
+
+
+	<!-- 상세보기 -->
+	<!-- 
+	<select id="selectFreeByNo" parameterType="int" resultType="FreeDTO">
+	  SELECT FREE_NO, TITLE, CONTENT, CREATE_DATE, HIT, USER_NO, STATE,IP,MODIFY_DATE
+	  FROM FREE
+	  WHERE FREE_NO = #{freeNo}
+	</select>
+	 -->
+	 <select id="selectFreeByNo" parameterType="int" resultMap="FreeDtoMap">
+	 SELECT  F.FREE_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE, F.IP, F.MODIFY_DATE, U.ID, U.NICKNAME, U.GENDER
+		  		  FROM FREE F INNER JOIN USERS U
+		     	    ON F.USER_NO = U.USER_NO
+		 WHERE F.FREE_NO = #{freeNo}
+	</select>
+	 
+	 
+		<!-- 상세보기(조회수) -->
+	<update id="updateHit" parameterType="int">
+		UPDATE FREE
+		   SET HIT = HIT + 1
+		 WHERE FREE_NO = #{freeNo}
+	</update>
+
+	<select id="selectSummernoteImageListInGallery" parameterType="int" resultType="FreeImageDTO">
+		SELECT FREE_IMAGE_NO, FILESYSTEM
+		  FROM FREE_IMAGE
+		 WHERE FREE_IMAGE_NO = #{imageNo}
+	</select>
+
+
+	<!-- 상품 상세보기 (상세보기 Thumbnail용)-->
+	<select id="selectSThumbNail" parameterType="int" resultType="FreeImageDTO">
+		SELECT F.FREE_IMAGE_NO, F.FILESYSTEM, U.FREE_NO
+		FROM    FREE_IMAGE F INNER JOIN USERS U	
+		ON F.FREE_IMAGE_NO = U.USERS
+		WHERE F.FREE_NO = #{freeNo}
+	</select>
+	
+	
+	
+	
+	<!-- 수정 -->
+	<update id="updateFree" parameterType="FreeDTO">
+		UPDATE FREE
+		   SET TITLE = #{title}, CONTENT = #{content}, MODIFY_DATE = NOW()
+		 WHERE FREE_NO = #{freeNo}
+	</update>
+	
+	
+	<!-- 삭제 -->
+	<delete id="deleteFreeGallery" parameterType="int">
+		DELETE
+		  FROM FREE
+		 WHERE FREE_NO = #{freeNo}
+	</delete>
+	
+	<!-- 다중 삭제(지원추가) -->
+		<delete id="deleteFreeList" parameterType="List">
+		DELETE
+		  FROM FREE
+		<where> 
+		 	<foreach collection="list" item="freeNo" open="FREE_NO IN(" separator="," close=")">
+				#{freeNo}
+			</foreach>
+		</where>
+	</delete>
+	
+	
+</mapper>

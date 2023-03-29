@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.userSupport.mapper.QnaMapper">
+
+	<select id="selectAllQnaCount" resultType="int">
+		SELECT COUNT(*)
+		  FROM QNA
+	</select>
+	
+	<select id="selectAllQnaList" parameterType="Map" resultType="QnaDTO">
+		SELECT QNA_NO, USER_NO, QNA_TITLE, QNA_ID, QNA_PW, QNA_CONTENT, QNA_CREATE_DATE, STATE, DEPTH, GROUP_NO, IS_PW
+		  FROM QNA
+		  ORDER BY QNA_NO DESC
+		  LIMIT #{begin}, #{recordPerPage}
+	</select>
+	
+	<select id="selectQnaByNo" parameterType="int" resultType="QnaDTO">
+		SELECT QNA_NO, USER_NO, QNA_TITLE, QNA_ID, QNA_PW, QNA_CONTENT, QNA_CREATE_DATE, STATE, DEPTH, GROUP_NO, IS_PW
+		  FROM QNA
+		 WHERE QNA_NO = #{qnaNo}
+	</select>
+	
+	<select id="selectQnaByPw" parameterType="map" resultType="QnaDTO">
+		SELECT QNA_NO, USER_NO, QNA_TITLE, QNA_ID, QNA_PW, QNA_CONTENT, QNA_CREATE_DATE, STATE, DEPTH, GROUP_NO, IS_PW
+		  FROM QNA
+		 WHERE QNA_NO = #{qnaNo}
+		   AND QNA_PW = #{qnaPw}
+	</select>
+
+	<insert id="insertQna" useGeneratedKeys="true" keyProperty="qnaNo" parameterType="QnaDTO">
+		INSERT INTO QNA
+			(USER_NO, QNA_TITLE, QNA_ID, QNA_PW, QNA_CONTENT, QNA_CREATE_DATE, STATE, DEPTH, GROUP_NO, IS_PW)
+		VALUES
+			( #{userNo}, #{qnaTitle}, #{qnaId}, 0, #{qnaContent}, NOW(), 1, 0, #{qnaNo}, 0)
+	</insert>
+	
+	<insert id="insertQnaPw" useGeneratedKeys="true" keyProperty="qnaNo" parameterType="QnaDTO">
+		INSERT INTO QNA
+			(USER_NO, QNA_TITLE, QNA_ID, QNA_PW, QNA_CONTENT, QNA_CREATE_DATE, STATE, DEPTH, GROUP_NO, IS_PW)
+		VALUES
+			( #{userNo}, #{qnaTitle}, #{qnaId}, #{qnaPw}, #{qnaContent}, NOW(), 1, 0, #{qnaNo}, #{isPw})
+	</insert>
+	
+	<update id="updateQna" parameterType="QnaDTO">
+		UPDATE QNA
+		SET QNA_TITLE = #{qnaTitle}
+			,QNA_CONTENT = #{qnaContent}
+		WHERE QNA_NO = #{qnaNo}
+	</update>
+	
+	<delete id="deleteQna" parameterType="int">
+		DELETE QNA
+		  FROM QNA
+		 WHERE QNA_NO = #{qnaNo}
+	</delete>
+	
+	
+</mapper>

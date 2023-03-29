@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	
+	<typeAliases>
+		<typeAlias type="com.gdu.sporters.users.domain.UsersDTO" alias="UsersDTO" />
+		<typeAlias type="com.gdu.sporters.users.domain.SleepUsersDTO" alias="SleepUsersDTO" />
+		<typeAlias type="com.gdu.sporters.users.domain.AccessLogDTO" alias="AccessLogDTO" />
+		<typeAlias type="com.gdu.sporters.users.domain.RetireUsersDTO" alias="RetireUsersDTO" />
+		<typeAlias type="com.gdu.sporters.users.domain.HeartDTO" alias="HeartDTO" />
+		
+		<typeAlias type="com.gdu.sporters.board.domain.FreeDTO" alias="FreeDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.FreeCommDTO" alias="FreeCommDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.SpoReviewDTO" alias="SpoReviewDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.SpoCommDTO" alias="SpoCommDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.LocalDTO" alias="LocalDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.LocalCommDTO" alias="LocalCommDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.LocalCategoryDTO" alias="LocalCategoryDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.AttachDTO" alias="AttachDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.FreeImageDTO" alias="FreeImageDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.LocalImageDTO" alias="LocalImageDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.SpoImageDTO" alias="SpoImageDTO" />
+		<typeAlias type="com.gdu.sporters.board.domain.JoinUsersDTO" alias="JoinUsersDTO" />
+		
+		<typeAlias type="com.gdu.sporters.shop.domain.OrderDTO" alias="OrderDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.ProductDTO" alias="ProductDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.CartDTO" alias="CartDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.ShopReviewDTO" alias="ShopReviewDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.PickDTO" alias="PickDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.ProdCategoryDTO" alias="ProdCategoryDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.ProdImageDTO" alias="ProdImageDTO" />
+		<typeAlias type="com.gdu.sporters.shop.domain.ProdThumbnailDTO" alias="ProdThumbnailDTO" />
+		
+
+		<typeAlias type="com.gdu.sporters.userSupport.domain.QnaDTO" alias="QnaDTO" />
+		<typeAlias type="com.gdu.sporters.userSupport.domain.QnaReplyDTO" alias="QnaReplyDTO" />
+		<typeAlias type="com.gdu.sporters.userSupport.domain.FaqDTO" alias="FaqDTO" />
+
+		
+		<typeAlias type="com.gdu.sporters.chat.domain.ChatMessDTO" alias="ChatMessDTO" />
+		<typeAlias type="com.gdu.sporters.chat.domain.ChatRoomDTO" alias="ChatRoomDTO" />
+		<typeAlias type="com.gdu.sporters.chat.domain.ChatUserDTO" alias="ChatUserDTO" />
+		
+		<typeAlias type="com.gdu.sporters.admin.domain.SingoDTO" alias="SingoDTO" />
+		<typeAlias type="com.gdu.sporters.admin.domain.SingoCategoryDTO" alias="SingoCategoryDTO" />
+		
+	</typeAliases>
+
+</configuration>

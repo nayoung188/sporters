@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.users.mapper.HeartMapper">
+
+
+	<select id="heartCheck" parameterType="map" resultType="HeartDTO">
+		SELECT IS_HEART
+		  FROM HEART
+		 WHERE USER_NO = #{userNo}
+		   AND CLICK_USER_NO = #{clickUserNo}
+	</select>
+	
+
+	<select id="selectUserHeartCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM HEART
+		 WHERE USER_NO = #{userNo}
+		   AND CLICK_USER_NO = #{clickUserNo}
+		   AND LOVE = 1
+	</select>
+	
+	<select id="selectUserHateCount" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		  FROM HEART
+		 WHERE CLICK_USER_NO = #{clickUserNo}
+		   AND USER_NO = #{userNo}
+ 		   AND HATE = -1 	
+	</select>
+	
+	<insert id="insertLove" parameterType="map">
+		INSERT INTO HEART
+			(USER_NO, CLICK_USER_NO, IS_HEART, LOVE, HATE)
+		VALUES
+			(#{userNo}, #{clickUserNo}, 1, 1, 0)
+	</insert>
+	
+	<delete id="deleteLove" parameterType="map">
+		DELETE
+		  FROM HEART
+		 WHERE USER_NO = #{userNo}
+		   AND CLICK_USER_NO = #{clickUserNo}
+		  <!-- AND LOVE = #{love} -->
+	</delete>
+	
+	<insert id="insertHate" parameterType="map">
+		INSERT INTO HEART
+			(USER_NO, CLICK_USER_NO, IS_HEART, LOVE, HATE)
+		VALUES
+			(#{userNo}, #{clickUserNo}, 1, 0, -1)
+	</insert>
+	
+	
+	<select id="selectLoveOrHate" parameterType="map" resultType="HeartDTO">
+		SELECT *
+		  FROM HEART
+		 WHERE USER_NO = #{userNo}
+		   AND CLICK_USER_NO = #{clickUserNo}
+	</select>
+	
+	<select id="clickedUserHeartCount" parameterType="map" resultType="int">
+		SELECT COUNT(LOVE)
+		  FROM HEART
+		 WHERE USER_NO = #{userNo}
+		   AND LOVE = 1
+	</select>
+	
+	<select id="clickedUserHateCount" parameterType="map" resultType="int">
+		SELECT COUNT(HATE)
+		  FROM HEART
+		 WHERE USER_NO = #{userNo}
+ 		   AND HATE = -1 	
+	</select>
+		
+</mapper>

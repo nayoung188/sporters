@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.board.mapper.GalleryCommMapper">
+<resultMap type="FreeCommDTO" id="FreeCommDtoMap">
+		<id  property="freeCoNo"  column="FREE_CO_NO"  />
+		<result property="freeNo"  column="FREE_NO" />	
+		<result property="commContent"  column="COMM_CONTENT" />	
+		<result property="createDate"  column="COMM_CREATE_DATE" />
+		<result property="state"  column="STATE" />
+		<result property="depth"  column="DEPTH" />	
+		<result property="groupNo"  column="GROUP_NO" />		
+		<result property="groupOrder"  column="GROUP_ORDER" />		
+		<result property="userNo"  column="USER_NO" />				
+		<association property="users"  javaType="UsersDTO" >
+			<id  property="userNo"  column="USER_NO"  />
+			<result property="id"  column="ID" />	
+			<result property="nickname"  column="NICKNAME" />	
+			<result property="name"  column="NAME" />
+			<result property="joinDate"  column="JOINDATE" />
+			<result property="gender"  column="GENDER" />		
+		</association>			
+	</resultMap>
+
+
+
+
+
+	<select id="selectFreeCommentCnt" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		  FROM FREE_COMMENT
+		 WHERE FREE_NO = #{freeNo}
+	</select>
+	
+	<insert id="insertFreeComment" parameterType="FreeCommDTO" useGeneratedKeys="true" keyProperty="freeCoNo">
+		INSERT INTO FREE_COMMENT
+			( FREE_NO, COMM_CONTENT,COMM_CREATE_DATE, STATE, DEPTH, GROUP_NO, GROUP_ORDER, USER_NO)
+		VALUES
+			( #{freeNo}, #{commContent}, NOW(), 1, 0, #{groupNo}, #{freeCoNo}, #{userNo})
+	</insert>
+	
+	<update id="updateCommGroupOrder" parameterType="FreeCommDTO">
+		UPDATE FREE_COMMENT
+		   SET GROUP_NO = #{freeCoNo}
+		 WHERE FREE_CO_NO = #{freeCoNo}
+	</update>
+	
+		
+	<select id="selectFreeCommentList" parameterType="Map" resultMap="FreeCommDtoMap">
+	 
+		SELECT         A.FREE_CO_NO,  A.FREE_NO, A.COMM_CONTENT, A.COMM_CREATE_DATE, A.STATE, A.DEPTH, A.GROUP_NO, A.GROUP_ORDER, A.USER_NO, A.ID, A.NICKNAME, A.GENDER
+		  FROM (SELECT F.FREE_CO_NO,  F.FREE_NO, F.COMM_CONTENT, F.COMM_CREATE_DATE, F.STATE, F.DEPTH, F.GROUP_NO, F.GROUP_ORDER, F.USER_NO, U.ID, U.NICKNAME, U.GENDER  
+		          FROM FREE_COMMENT F INNER JOIN USERS U
+		     	    ON F.USER_NO = U.USER_NO) A	
+		     	    WHERE A.FREE_NO = #{freeNo}
+		     	    ORDER BY A.FREE_CO_NO 	
+	</select>
+	
+		
+	<update id="deleteFreeComment" parameterType="int">
+		UPDATE FREE_COMMENT
+		   SET STATE = -1
+		 WHERE FREE_CO_NO = #{freeCoNo}
+	</update>
+	
+	<insert id="insertFreeReply" parameterType="FreeCommDTO">
+	INSERT INTO FREE_COMMENT
+			( FREE_NO, COMM_CONTENT,COMM_CREATE_DATE, STATE, DEPTH, GROUP_NO, GROUP_ORDER, USER_NO)
+		VALUES
+			( #{freeNo}, #{commContent}, NOW(), 1, 1, #{groupNo},#{groupOrder}, #{userNo})
+	<!-- 
+		INSERT INTO FREE_COMMENT
+			( FREE_NO, COMM_CONTENT, STATE, DEPTH, GROUP_NO, COMM_DATE, ID)
+		VALUES
+			( #{freeNo}, #{commContent}, 1, 1, #{commGroupNo}, NOW(), #{id})
+			 -->
+	</insert>
+	
+	
+	
+</mapper>

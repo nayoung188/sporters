@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.userSupport.mapper.FaqMapper">
+
+	<select id="selectAllFaqCount" resultType="int">
+		SELECT COUNT(*)
+		  FROM FAQ
+	</select>
+
+	<select id="selectAllFaqList" parameterType="Map" resultType="FaqDTO">
+		SELECT FAQ_NO, FAQ_TITLE, FAQ_CONTENT, STATE, DEPTH, GROUP_NO
+		  FROM FAQ
+		  ORDER BY FAQ_NO DESC
+	</select>
+	
+	<insert id="insertFaq" parameterType="FaqDTO" >
+		INSERT INTO FAQ
+			(FAQ_TITLE, FAQ_CONTENT, STATE, DEPTH, GROUP_NO)
+		VALUES
+			(#{faqTitle}, #{faqContent}, 1, #{depth}, #{faqNo})
+	</insert>
+	
+	<update id="updateFaq" parameterType="FaqDTO">
+		UPDATE FAQ
+		   SET FAQ_TITLE = #{faqTitle}
+		     , FAQ_CONTENT = #{faqContent]
+		 WHERE FAQ_NO = {faqNo}
+	</update>
+	
+	<delete id="deleteFaq" parameterType="int">
+		DELETE FAQ
+		 WHERE FAQ_NO = #{faqNo}
+	</delete>
+	
+	
+</mapper>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.board.mapper.GallerySpoCommMapper">
+<resultMap type="SpoCommDTO" id="SpoCommdtoMap">
+		<id  property="spoCoNo"  column="SPO_CO_NO"  />
+		<result property="spoReviewNo"  column="SPO_REVIEW_NO" />	
+		<result property="commContent"  column="COMM_CONTENT" />	
+		<result property="commcreateDate"  column="COMM_CREATE_DATE" />
+		<result property="state"  column="STATE" />
+		<result property="depth"  column="DEPTH" />	
+		<result property="groupNo"  column="GROUP_NO" />		
+		<result property="groupOrder"  column="GROUP_ORDER" />		
+		<result property="userNo"  column="USER_NO" />				
+		<association property="users"  javaType="UsersDTO" >
+			<id  property="userNo"  column="USER_NO"  />
+			<result property="id"  column="ID" />	
+			<result property="nickname"  column="NICKNAME" />	
+			<result property="name"  column="NAME" />
+			<result property="joinDate"  column="JOINDATE" />
+			<result property="gender"  column="GENDER" />		
+		</association>			
+	</resultMap>
+
+
+
+
+
+	<select id="selectFreeCommentCnt" parameterType="int" resultType="int">
+		SELECT COUNT(*)
+		  FROM SPO_COMMENT
+		 WHERE SPO_REVIEW_NO = #{spoReviewNo}
+	</select>
+	
+	<insert id="insertFreeComment" parameterType="SpoCommDTO" useGeneratedKeys="true" keyProperty="spoCoNo">
+		INSERT INTO SPO_COMMENT
+			( SPO_REVIEW_NO,  COMM_CONTENT,   COMM_CREATE_DATE, STATE, DEPTH, GROUP_NO, GROUP_ORDER, USER_NO)
+		VALUES
+			( #{spoReviewNo}, #{commContent}, NOW(),             1,       0, #{groupNo}, #{spoCoNo}, #{userNo})
+	</insert>
+	
+	<update id="updateCommGroupOrder" parameterType="SpoCommDTO">
+		UPDATE SPO_COMMENT
+		   SET GROUP_NO = #{spoCoNo}
+		 WHERE SPO_CO_NO = #{spoCoNo}
+	</update>
+	
+		
+	<select id="selectFreeCommentList" parameterType="Map" resultMap="SpoCommdtoMap">
+	 
+		SELECT         A.SPO_CO_NO, A.SPO_REVIEW_NO, A.COMM_CONTENT, A.COMM_CREATE_DATE, A.STATE, A.DEPTH, A.GROUP_NO, A.GROUP_ORDER, A.USER_NO, A.ID, A.NICKNAME, A.GENDER  
+		  FROM (SELECT F.SPO_CO_NO, F.SPO_REVIEW_NO, F.COMM_CONTENT, F.COMM_CREATE_DATE, F.STATE, F.DEPTH, F.GROUP_NO, F.GROUP_ORDER, F.USER_NO, U.ID, U.NICKNAME, U.GENDER  
+		          FROM SPO_COMMENT F INNER JOIN USERS U
+		     	    ON F.USER_NO = U.USER_NO) A	
+				    WHERE SPO_REVIEW_NO = #{spoReviewNo}
+		     	    ORDER BY A.SPO_CO_NO 
+	
+	</select>
+	
+		
+	<update id="deleteFreeComment" parameterType="int">
+		UPDATE SPO_COMMENT
+		   SET STATE = -1
+		 WHERE SPO_CO_NO = #{spoCoNo}
+	</update>
+	
+	<insert id="insertFreeReply" parameterType="SpoCommDTO">
+	INSERT INTO SPO_COMMENT
+			( SPO_REVIEW_NO, COMM_CONTENT,COMM_CREATE_DATE, STATE, DEPTH, GROUP_NO, GROUP_ORDER, USER_NO)
+		VALUES
+			( #{spoReviewNo}, #{commContent}, NOW(), 1, 1, #{groupNo},#{groupOrder}, #{userNo})
+			
+		
+	<!-- 
+		INSERT INTO FREE_COMMENT
+			( FREE_NO, COMM_CONTENT, STATE, DEPTH, GROUP_NO, COMM_DATE, ID)
+		VALUES
+			( #{freeNo}, #{commContent}, 1, 1, #{commGroupNo}, NOW(), #{id})
+			 -->
+	</insert>
+	
+	
+	
+</mapper>

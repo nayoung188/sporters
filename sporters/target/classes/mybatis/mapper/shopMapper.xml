@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.shop.mapper.ShopMapper">
+	
+	<resultMap type="ProductDTO" id="ProductCategoryMap">
+		<id property="prodNo" column="PROD_NO" />
+		<result property="prodCategoryNo" column="PROD_CATEGORY_NO"/>
+		<result property="prodName" column="PROD_NAME"/>
+		<result property="price" column="PRICE"/>
+		<result property="discount" column="DISCOUNT"/>
+		<result property="prodContent" column="PROD_CONTENT"/>
+		<result property="origin" column="ORIGIN"/>
+		<result property="stock" column="STOCK"/>
+		<result property="prodCreateDate" column="PROD_CREATE_DATE"/>
+		<association property="prodCategory" javaType="ProdCategoryDTO">
+			<id property="prodCategoryNo" column="PROD_CATEGORY_NO"/>
+			<result property="prodCategoryName" column="PROD_CATEGORY_NAME"/>
+		</association>
+		<association property="prodThumbnail" javaType="ProdThumbnailDTO">
+			<id property="tnNo" column="TN_NO"/>
+			<result property="prodNo" column="PROD_NO"/>
+			<result property="tnPath" column="TN_PATH"/>
+			<result property="tnOrigin" column="TN_ORIGIN"/>
+			<result property="tnFilesystem" column="TN_FILESYSTEM"/>
+			<result property="isThumbnail" column="IS_THUMBNAIL"/>
+		</association>
+		
+	</resultMap>
+	
+	<resultMap type="cartDTO" id="cartMap">
+		<id property="cartNo" column="CART_NO" />
+		<result property="userNo" column="USER_NO"/>
+		<result property="prodNo" column="PROD_NO"/>
+		<result property="prodCnt" column="PROD_CNT"/>
+		<association property="product" javaType="ProductDTO">
+			<id property="prodNo" column="PROD_NO" />
+			<result property="prodName" column="PROD_NAME"/>
+			<result property="price" column="PRICE"/>
+			<result property="stock" column="STOCK"/>
+		</association>
+	</resultMap>
+	
+	<select id="selectProductListByMap" parameterType="Map" resultMap="ProductCategoryMap">
+		SELECT P.PROD_NO, P.PROD_CATEGORY_NO, P.PROD_NAME, P.PRICE, P.DISCOUNT, P.PROD_CONTENT, P.ORIGIN, P.STOCK, P.PROD_CREATE_DATE, TN.IS_THUMBNAIL
+		  FROM PRODUCT P LEFT OUTER JOIN PROD_THUMBNAIL TN
+		    ON P.PROD_NO = TN.PROD_NO
+		 LIMIT #{begin}, #{recordPerPage}
+	</select>
+	
+	<select id="categoryList" parameterType="int" resultMap="ProductCategoryMap">
+		SELECT P.PROD_NO, P.PROD_NAME, P.PROD_CATEGORY_NO, P.PRICE, P.DISCOUNT, P.PROD_CONTENT, P.ORIGIN, P.STOCK, P.PROD_CREATE_DATE, TN.IS_THUMBNAIL
+		  FROM PRODUCT P LEFT OUTER JOIN PROD_THUMBNAIL TN
+		    ON P.PROD_NO = TN.PROD_NO
+		 WHERE PROD_CATEGORY_NO = #{prodCategoryNo}
+	</select>
+	
+	<select id="selectProductCount" resultType="int">
+		SELECT COUNT(*)
+		  FROM PRODUCT
+	</select>
+	
+	<select id="selectProductByNo" parameterType="int" resultMap="ProductCategoryMap">
+		SELECT P.PROD_NO, P.PROD_CATEGORY_NO, P.PROD_NAME, P.PRICE, P.DISCOUNT, P.PROD_CONTENT, P.ORIGIN, P.STOCK, C.PROD_CATEGORY_NAME, TN.IS_THUMBNAIL
+		  FROM PRODUCT P INNER JOIN PROD_CATEGORY C
+		    ON P.PROD_CATEGORY_NO = C.PROD_CATEGORY_NO LEFT OUTER JOIN PROD_THUMBNAIL TN
+		    ON P.PROD_NO = TN.PROD_NO
+		 WHERE P.PROD_NO = #{prodNo}
+	</select> 
+	
+	<insert id="addCart" parameterType="CartDTO">
+		INSERT INTO CART
+			(<!-- CART_NO, --> USER_NO, PROD_NO, PROD_CNT, ORDER_STATE)
+		VALUES
+			(<!-- #{cartNo}, --> #{userNo}, #{prodNo}, #{prodCnt}, 0)
+	</insert>
+	
+	<select id="selectCartListByMap" parameterType="map" resultMap="cartMap">
+		SELECT C.CART_NO, C.USER_NO, C.PROD_NO, C.PROD_CNT, P.PROD_NAME, P.PRICE, P.STOCK, C.ORDER_STATE
+		  FROM CART C INNER JOIN PRODUCT P
+		    ON C.PROD_NO = P.PROD_NO
+		 WHERE C.USER_NO = #{userNo} AND C.ORDER_STATE = 0
+	</select>
+	
+	<delete id="deleteCart" parameterType="CartDTO">
+		DELETE
+		  FROM CART
+		 WHERE CART_NO = #{cartNo}
+		   AND USER_NO = #{userNo}
+	</delete>
+	
+	<select id="selectProdThumbnailListByNo" parameterType="int" resultType="ProdThumbnailDTO">
+		SELECT TN_NO, PROD_NO, TN_PATH, TN_ORIGIN, TN_FILESYSTEM, IS_THUMBNAIL
+		  FROM PROD_THUMBNAIL
+		 WHERE PROD_NO = #{prodNo}
+	</select>
+	
+	<select id="selectProdNo" parameterType="Map" resultType="CartDTO">
+		SELECT PROD_NO
+		  FROM CART
+		 WHERE USER_NO = #{userNo}
+		   AND PROD_NO = #{prodNo}
+	</select>
+	
+	<insert id="insertOrder" parameterType="OrderDTO">
+		INSERT INTO ORDERS (USER_NO, CART_BUNDLE, CART_NO, PAYMENT, NAME, MOBILE, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, ORDER_DATE, ORDER_STATE, PRICE_ALL)
+		VALUES (#{userNo}, #{cartBundle}, #{cartNo}, #{payment}, #{name}, #{mobile}, #{postcode}, #{roadAddress}, #{jibunAddress}, #{detailAddress}, NOW(), '결제완료', #{priceAll})
+	</insert>
+	
+	<update id="updateCartState" parameterType="CartDTO">
+		UPDATE CART
+		   SET ORDER_STATE = 1
+		 WHERE CART_NO = #{cartNo}
+	</update>
+	
+	<update id="updateStock" parameterType="ProductDTO">
+		UPDATE PRODUCT
+		   SET STOCK = #{stock}
+		 WHERE PROD_NO = #{prodNo}
+	</update>
+	
+	<select id="selectOrderList" resultType="OrderDTO" parameterType="map">
+		SELECT ORDER_NO, USER_NO, CART_BUNDLE, CART_NO, PAYMENT, NAME, MOBILE, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, ORDER_DATE, ORDER_STATE, PRICE_ALL
+		  FROM ORDERS
+		 WHERE USER_NO = #{userNo}
+		 ORDER BY ORDER_NO
+	</select>
+	
+	<select id="selectOrderDetail" parameterType="int" resultType="OrderDTO">
+		SELECT ORDER_NO, USER_NO, CART_NO, PAYMENT, NAME, MOBILE, POSTCODE, ROAD_ADDRESS, JIBUN_ADDRESS, DETAIL_ADDRESS, ORDER_DATE, ORDER_STATE, PRICE_ALL
+		  FROM ORDERS
+		 WHERE ORDER_NO = #{orderNo}
+	</select>
+	
+	<select id="selectOrderNo" resultType="int">
+		SELECT MAX(CART_BUNDLE)
+		  FROM ORDERS
+	</select>
+	
+</mapper>

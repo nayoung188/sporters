@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.gdu.sporters.board.mapper.LocalBoardMapper">
+	<resultMap type="LocalDTO" id="LocalDtoMap">
+		<id property="localBoardNo"  column="LOCAL_BOARD_NO" />
+		<result property="title"  column="TITLE" />
+		<result property="content"  column="CONTENT" />
+		<result property="createDate"  column="CREATE_DATE" />
+		<result property="hit"  column="HIT" />
+		<result property="userNo"  column="USER_NO" />
+		<result property="state"  column="STATE" />		
+		<result property="maxUser"  column="MAX_USER" />
+		<result property="localNo"  column="LOCAL_NO" />
+		<result property="ip"  column="IP" />
+		<result property="modifyDate"  column="MODIFY_DATE" />	
+		<result property="joinStart"  column="JOIN_START" />	
+		<result property="joinEnd"  column="JOIN_END" />	
+	
+		<association property="users"  javaType="UsersDTO" >
+			<id  property="userNo"  column="USER_NO"  />
+			<result property="id"  column="ID" />	
+			<result property="nickname"  column="NICKNAME" />	
+			<result property="name"  column="NAME" />
+			<result property="joinDate"  column="JOINDATE" />
+			<result property="gender"  column="GENDER" />		
+		</association>		
+		
+		
+		<association property="localImagess" javaType="LocalImageDTO">
+			<id property="imageNo" column="LOCAL_IMAGE_NO"/>
+			<result property="localBoardNo" column="LOCAL_BOARD_NO"/>
+			<result property="filesystem" column="FILESYSTEM"/>		
+		</association>
+		
+	</resultMap>
+	
+
+	<select id="selectLocalListCnt" resultType="int">
+		SELECT COUNT(*)
+		FROM LOCALS
+	</select>
+
+	<!-- 게시판목록 -->
+	<select id="selectLocalList" parameterType="Map" resultMap="LocalDtoMap">
+		SELECT A.LOCAL_BOARD_NO, A.TITLE, A.CONTENT, A.CREATE_DATE,  A.HIT,A.USER_NO, A.STATE, A.MAX_USER, A.LOCAL_NO, A.IP, A.MODIFY_DATE, A.JOIN_START, A.JOIN_END,A.ID, A.NICKNAME, A.GENDER, A.LOCAL_IMAGE_NO, A.LOCAL_BOARD_NO, A.FILESYSTEM
+		  FROM (SELECT F.LOCAL_BOARD_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE, F.MAX_USER, F.LOCAL_NO, F.IP, F.MODIFY_DATE, F.JOIN_START, F.JOIN_END,U.ID, U.NICKNAME, U.GENDER, TN.LOCAL_IMAGE_NO, TN.FILESYSTEM            
+		  		  FROM LOCALS F INNER JOIN USERS U
+                  ON F.USER_NO = U.USER_NO LEFT OUTER JOIN LOCALS_IMAGE TN
+		  		  ON F.LOCAL_BOARD_NO = TN.LOCAL_BOARD_NO) A
+		  		  ORDER BY LOCAL_BOARD_NO DESC
+		 LIMIT #{begin}, #{recordPerPage}
+	</select>
+	
+	<!-- 메인 섬네일 갯수제한을 위한 쿼리 -->
+	<!-- 미친 ㅋㅋㅋㅋ where로 파일 없을때는 게시글 안불러오게 구현성공함 ㄹㅇㅋㅋㅋㅋㅋ 신주노 드디어 빛을 보다 -주노창세기 2장 5절  -->
+	<select id="selectindexThumbNail" parameterType="Map" resultMap="LocalDtoMap">
+		SELECT A.LOCAL_BOARD_NO, A.TITLE, A.CONTENT, A.CREATE_DATE,  A.HIT,A.USER_NO, A.STATE, A.MAX_USER, A.LOCAL_NO, A.IP, A.MODIFY_DATE, A.JOIN_START, A.JOIN_END,A.ID, A.NICKNAME, A.GENDER, A.LOCAL_IMAGE_NO, A.LOCAL_BOARD_NO, A.FILESYSTEM
+		  FROM (SELECT F.LOCAL_BOARD_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE, F.MAX_USER, F.LOCAL_NO, F.IP, F.MODIFY_DATE, F.JOIN_START, F.JOIN_END,U.ID, U.NICKNAME, U.GENDER, TN.LOCAL_IMAGE_NO, TN.FILESYSTEM            
+		  		  FROM LOCALS F INNER JOIN USERS U
+                  ON F.USER_NO = U.USER_NO LEFT OUTER JOIN LOCALS_IMAGE TN
+		  		  ON F.LOCAL_BOARD_NO = TN.LOCAL_BOARD_NO) A
+		  		  WHERE A.FILESYSTEM IS NOT NULL
+		 ORDER BY LOCAL_BOARD_NO DESC
+         LIMIT 0, 3
+	</select>
+	
+	
+	
+	<!-- 게시판 삽입(첨부파일 추가) -->
+	<insert id="insertLocal" parameterType="localDTO"  useGeneratedKeys="true" keyProperty="localBoardNo">
+		INSERT INTO LOCALS
+			(TITLE, CONTENT, CREATE_DATE, HIT, USER_NO, STATE , MAX_USER, LOCAL_NO, IP, MODIFY_DATE , JOIN_START, JOIN_END    )
+		VALUES
+			(#{title}, #{content}, NOW(), 0, #{userNo}, 0, #{maxUser}, #{localNo}, #{ip}, NOW(), #{joinStart}, #{joinEnd}  )
+	</insert>
+	
+	
+	<!-- 이미지 삽입 -->
+	<insert id="insertSummernoteImage" parameterType="localImageDTO">
+		INSERT INTO LOCALS_IMAGE
+			(LOCAL_BOARD_NO, FILESYSTEM)
+		VALUES
+			(#{localBoardNo}, #{filesystem})						
+	</insert>
+
+
+
+	<!-- 상세보기 -->
+	<!-- 
+	<select id="selectFreeByNo" parameterType="int" resultType="FreeDTO">
+	  SELECT FREE_NO, TITLE, CONTENT, CREATE_DATE, HIT, USER_NO, STATE,IP,MODIFY_DATE
+	  FROM FREE
+	  WHERE FREE_NO = #{freeNo}
+	</select>
+	 -->
+	 <select id="selectLocalByNo" parameterType="int" resultMap="LocalDtoMap">
+	 SELECT  F.LOCAL_BOARD_NO, F.TITLE, F.CONTENT, F.CREATE_DATE,  F.HIT, F.USER_NO , F.STATE,F.MAX_USER, F.LOCAL_NO, F.IP, F.MODIFY_DATE,F.JOIN_START, F.JOIN_END,  U.ID, U.NICKNAME, U.GENDER
+	  		  FROM LOCALS F INNER JOIN USERS U
+	     	    ON F.USER_NO = U.USER_NO
+	 WHERE F.LOCAL_BOARD_NO = #{localBoardNo}
+	</select>
+	
+	
+	
+	
+	
+	
+	
+	
+	 
+	 
+		<!-- 상세보기(조회수) -->
+	<update id="updateHit" parameterType="int">
+		UPDATE LOCALS
+		   SET HIT = HIT + 1
+		 WHERE LOCAL_BOARD_NO = #{localBoardNo}
+	</update>
+
+	<select id="selectSummernoteImageListInGallery" parameterType="int" resultType="LocalImageDTO">
+		SELECT LOCAL_IMAGE_NO, FILESYSTEM
+		  FROM LOCALS_IMAGE
+		 WHERE LOCAL_IMAGE_NO = #{imageNo}
+	</select>
+
+
+	<!-- 상품 상세보기 (상세보기 Thumbnail용)-->
+	<select id="selectSThumbNail" parameterType="int" resultType="LocalImageDTO">
+		SELECT F.LOCAL_IMAGE_NO, F.FILESYSTEM, U.LOCAL_BOARD_NO
+		FROM    LOCALS_IMAGE F INNER JOIN USERS U	
+		ON F.LOCAL_IMAGE_NO = U.USERS
+		WHERE LOCAL_BOARD_NO = #{localBoardNo}
+	</select>
+	<!-- 상품 상세보기 (썸네일 List) -->
+	<select id="selectProdThumbnailListByNo" parameterType="int" resultType="ProdThumbnailDTO">
+		SELECT TN_NO, PROD_NO, TN_PATH, TN_ORIGIN, TN_FILESYSTEM, IS_THUMBNAIL
+		  FROM PROD_THUMBNAIL
+		 WHERE PROD_NO = #{prodNo}
+	</select>
+	
+	
+	
+	<!-- 수정 -->
+	<update id="updateLocal" parameterType="LocalDTO">
+		UPDATE LOCALS
+		   SET TITLE = #{title}, CONTENT = #{content}, MODIFY_DATE = NOW()
+		 WHERE LOCAL_BOARD_NO = #{localBoardNo}
+	</update>
+	
+	
+	<!-- 삭제 -->
+	<delete id="deleteLocalGallery" parameterType="int">
+		DELETE
+		  FROM LOCALS
+		 WHERE LOCAL_BOARD_NO = #{localBoardNo}
+	</delete>
+	
+	
+	
+</mapper>
